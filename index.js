@@ -75,6 +75,8 @@ module.exports = function (config) {
   var outputOptions = config.outputOptions || [];
   var frameDirectory = config.tempDir || config.frameDir;
   var fps;
+  var startFrame;
+  
   var frameMode = config.frameCache || !config.pipeMode;
   var pipeMode = config.pipeMode;
   var processError;
@@ -97,6 +99,12 @@ module.exports = function (config) {
     outputPattern: outputPattern
   });
 
+  if (config.startFrame) {
+      startFrame = config.startFrame;
+  } else {
+      startFrame = 1;
+  }
+  
   if (config.fps) {
     fps = config.fps;
   } else if (config.frames && config.duration) {
@@ -126,6 +134,7 @@ module.exports = function (config) {
       ffmpegArgs = ffmpegArgs.concat(['-framerate', fps]);
     }
 
+    ffmpegArgs = ffmpegArgs.concat(['-start_number', startFrame]); //开始的图片
     ffmpegArgs = ffmpegArgs.concat(['-i', input]);
     if (!argumentArrayContains(outputOptions, '-pix_fmt') && config.pixFmt) {
       ffmpegArgs = ffmpegArgs.concat(['-pix_fmt', config.pixFmt]);
