@@ -146,12 +146,12 @@ module.exports = function (config) {
 
         ffmpegArgs = ffmpegArgs.concat(["-start_number", startFrame]); //开始的图片
         ffmpegArgs = ffmpegArgs.concat(["-i", input]);
-        if (
-            !argumentArrayContains(outputOptions, "-pix_fmt") &&
-            config.pixFmt
-        ) {
-            ffmpegArgs = ffmpegArgs.concat(["-pix_fmt", config.pixFmt]);
-        }
+        // if (
+        //     !argumentArrayContains(outputOptions, "-pix_fmt") &&
+        //     config.pixFmt
+        // ) {
+        //     ffmpegArgs = ffmpegArgs.concat(["-pix_fmt", config.pixFmt]);
+        // }
 
         //测试透明mp4
         ffmpegArgs = ffmpegArgs.concat(["-f", "image2"]);
