@@ -36,7 +36,7 @@ const fs = require("fs");
 const spawn = require("child_process").spawn;
 const defaultFPS = 60;
 
-const makeFileDirectoryIfNeeded = function(filepath) {
+const makeFileDirectoryIfNeeded = function (filepath) {
     var dir = path.parse(filepath).dir,
         ind,
         currDir;
@@ -49,15 +49,15 @@ const makeFileDirectoryIfNeeded = function(filepath) {
     }
 };
 
-const deleteFolder = function(dir) {
-    fs.readdirSync(dir).forEach(function(file) {
+const deleteFolder = function (dir) {
+    fs.readdirSync(dir).forEach(function (file) {
         fs.unlinkSync(path.join(dir, file));
     });
     fs.rmdirSync(dir);
 };
 
-const argumentArrayContains = function(args, item) {
-    return args.reduce(function(accumulator, currentValue) {
+const argumentArrayContains = function (args, item) {
+    return args.reduce(function (accumulator, currentValue) {
         return (
             accumulator ||
             currentValue === item ||
@@ -66,13 +66,13 @@ const argumentArrayContains = function(args, item) {
     }, false);
 };
 
-module.exports = function(config) {
+module.exports = function (config) {
     config = Object.assign(
         {
             roundToEvenWidth: true,
             roundToEvenHeight: true,
             url: "index.html",
-            pixFmt: "yuv420p"
+            pixFmt: "yuva444p10le",
         },
         config || {}
     );
@@ -100,13 +100,13 @@ module.exports = function(config) {
             frameDirectory = path.join(config.frameCache, frameDirectory);
         }
         frameDirectory = path.resolve(path.parse(output).dir, frameDirectory);
-        outputPattern = path.resolve(frameDirectory, "image-%09d.jpg");
+        outputPattern = path.resolve(frameDirectory, "image-%09d.png");
     } else {
         outputPattern = "";
     }
     var timesnapConfig = Object.assign({}, config, {
         output: "",
-        outputPattern: outputPattern
+        outputPattern: outputPattern,
     });
 
     if (config.startFrame) {
@@ -123,14 +123,14 @@ module.exports = function(config) {
         fps = defaultFPS;
     }
 
-    const log = function() {
+    const log = function () {
         if (!config.quiet) {
             // eslint-disable-next-line no-console
             console.log.apply(this, arguments);
         }
     };
 
-    var makeProcessPromise = function() {
+    var makeProcessPromise = function () {
         makeFileDirectoryIfNeeded(output);
         var input;
         if (pipeMode) {
@@ -152,22 +152,29 @@ module.exports = function(config) {
         ) {
             ffmpegArgs = ffmpegArgs.concat(["-pix_fmt", config.pixFmt]);
         }
+
+        //测试透明mp4
+        ffmpegArgs = ffmpegArgs.concat(["-f", "image2"]);
+        ffmpegArgs = ffmpegArgs.concat(["-c:v", "prores_ks"]);
+        ffmpegArgs = ffmpegArgs.concat(["-profile:v", "4444"]);
+        ffmpegArgs = ffmpegArgs.concat(["-alpha_bits", "8"]);
+
         // -y writes over existing files
         ffmpegArgs = ffmpegArgs.concat(outputOptions).concat(["-y", output]);
         convertProcess = spawn("ffmpeg", ffmpegArgs);
         convertProcess.stderr.setEncoding("utf8");
-        convertProcess.stderr.on("data", function(data) {
+        convertProcess.stderr.on("data", function (data) {
             log(data);
         });
-        return new Promise(function(resolve, reject) {
-            convertProcess.on("close", function() {
+        return new Promise(function (resolve, reject) {
+            convertProcess.on("close", function () {
                 resolve();
             });
-            convertProcess.on("error", function(err) {
+            convertProcess.on("error", function (err) {
                 processError = err;
                 reject(err);
             });
-            convertProcess.stdin.on("error", function(err) {
+            convertProcess.stdin.on("error", function (err) {
                 processError = err;
                 reject(err);
             });
@@ -176,7 +183,7 @@ module.exports = function(config) {
 
     if (pipeMode) {
         processPromise = makeProcessPromise();
-        timesnapConfig.frameProcessor = function(buffer) {
+        timesnapConfig.frameProcessor = function (buffer) {
             if (processError) {
                 throw processError;
             }
@@ -185,12 +192,12 @@ module.exports = function(config) {
     }
 
     return timesnap(timesnapConfig)
-        .then(function() {
+        .then(function () {
             if (convertProcess) {
                 convertProcess.stdin.end();
             }
         })
-        .then(function() {
+        .then(function () {
             // wait for ffmpeg to finish
             if (processPromise) {
                 return processPromise;
@@ -198,10 +205,10 @@ module.exports = function(config) {
                 return makeProcessPromise();
             }
         })
-        .catch(function(err) {
+        .catch(function (err) {
             log(err);
         })
-        .then(function() {
+        .then(function () {
             if (frameMode && !config.keepFrames) {
                 deleteFolder(frameDirectory);
             }
