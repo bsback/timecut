@@ -140,6 +140,7 @@ module.exports = function (config) {
         }
         ffmpegArgs = inputOptions;
 
+        ffmpegArgs = ffmpegArgs.concat(["-f", "image2"]);
         if (!argumentArrayContains(inputOptions, "-framerate")) {
             ffmpegArgs = ffmpegArgs.concat(["-framerate", fps]);
         }
@@ -154,10 +155,9 @@ module.exports = function (config) {
         // }
 
         //测试透明mp4
-        ffmpegArgs = ffmpegArgs.concat(["-f", "image2"]);
         ffmpegArgs = ffmpegArgs.concat(["-c:v", "prores_ks"]);
         ffmpegArgs = ffmpegArgs.concat(["-profile:v", "4444"]);
-        ffmpegArgs = ffmpegArgs.concat(["-alpha_bits", "8"]);
+        // ffmpegArgs = ffmpegArgs.concat(["-alpha_bits", "8"]);
 
         // -y writes over existing files
         ffmpegArgs = ffmpegArgs.concat(outputOptions).concat(["-y", output]);
