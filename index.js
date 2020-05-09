@@ -172,11 +172,7 @@ module.exports = function (config) {
         if (transparentBackground) {
             //测试透明mp4
             ffmpegArgs = ffmpegArgs.concat(["-c:v", "prores_ks"]);
-            ffmpegArgs = ffmpegArgs.concat(["-pix_fmt", "yuv444p10"]);
-            ffmpegArgs = ffmpegArgs.concat(["-profile:v", "4"]);
-            ffmpegArgs = ffmpegArgs.concat(["-vendor", "ap10"]);
-            // ffmpegArgs = ffmpegArgs.concat(["-profile:v", "4444"]);
-            // ffmpegArgs = ffmpegArgs.concat(["-q:v", 5]); //quality of video, 0 being best 51 being worst
+            ffmpegArgs = ffmpegArgs.concat(["-profile:v", "4444"]);
             // ffmpegArgs = ffmpegArgs.concat(["-alpha_bits", "8"]);
         }
 
