@@ -72,7 +72,7 @@ module.exports = function (config) {
             roundToEvenWidth: true,
             roundToEvenHeight: true,
             url: "index.html",
-            pixFmt: "yuva444p10le",
+            pixFmt: "yuv420p",
         },
         config || {}
     );
@@ -83,6 +83,14 @@ module.exports = function (config) {
     var frameDirectory = config.tempDir || config.frameDir;
     var fps;
     var startFrame;
+
+    //透明背景
+    var transparentBackground = config.transparentBackground;
+    if (transparentBackground) {
+        output += ".mov";
+    } else {
+        output += ".mp4";
+    }
 
     var frameMode = config.frameCache || !config.pipeMode;
     var pipeMode = config.pipeMode;
@@ -100,7 +108,10 @@ module.exports = function (config) {
             frameDirectory = path.join(config.frameCache, frameDirectory);
         }
         frameDirectory = path.resolve(path.parse(output).dir, frameDirectory);
-        outputPattern = path.resolve(frameDirectory, "image-%09d.png");
+        outputPattern = path.resolve(
+            frameDirectory,
+            "image-%09d." + config.screenshotType
+        );
     } else {
         outputPattern = "";
     }
@@ -140,24 +151,29 @@ module.exports = function (config) {
         }
         ffmpegArgs = inputOptions;
 
-        ffmpegArgs = ffmpegArgs.concat(["-f", "image2"]);
+        if (transparentBackground) {
+            ffmpegArgs = ffmpegArgs.concat(["-f", "image2"]); //透明需要
+        }
         if (!argumentArrayContains(inputOptions, "-framerate")) {
             ffmpegArgs = ffmpegArgs.concat(["-framerate", fps]);
         }
 
         ffmpegArgs = ffmpegArgs.concat(["-start_number", startFrame]); //开始的图片
         ffmpegArgs = ffmpegArgs.concat(["-i", input]);
-        // if (
-        //     !argumentArrayContains(outputOptions, "-pix_fmt") &&
-        //     config.pixFmt
-        // ) {
-        //     ffmpegArgs = ffmpegArgs.concat(["-pix_fmt", config.pixFmt]);
-        // }
+        if (
+            !transparentBackground &&
+            !argumentArrayContains(outputOptions, "-pix_fmt") &&
+            config.pixFmt
+        ) {
+            ffmpegArgs = ffmpegArgs.concat(["-pix_fmt", config.pixFmt]);
+        }
 
-        //测试透明mp4
-        ffmpegArgs = ffmpegArgs.concat(["-c:v", "prores_ks"]);
-        ffmpegArgs = ffmpegArgs.concat(["-profile:v", "4444"]);
-        // ffmpegArgs = ffmpegArgs.concat(["-alpha_bits", "8"]);
+        if (transparentBackground) {
+            //测试透明mp4
+            ffmpegArgs = ffmpegArgs.concat(["-c:v", "prores_ks"]);
+            ffmpegArgs = ffmpegArgs.concat(["-profile:v", "4444"]);
+            // ffmpegArgs = ffmpegArgs.concat(["-alpha_bits", "8"]);
+        }
 
         // -y writes over existing files
         ffmpegArgs = ffmpegArgs.concat(outputOptions).concat(["-y", output]);
