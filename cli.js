@@ -3,7 +3,7 @@
 /**
  * BSD 3-Clause License
  *
- * Copyright (c) 2018-2019, Steve Tung
+ * Copyright (c) 2018-2020, Steve Tung
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,6 @@ commander
   .option('-R, --fps <frame rate>', 'Frames per second to capture (default: 60)', parseFloat)
   .option('-d, --duration <seconds>', 'Duration of capture, in seconds (default: 5)', parseFloat)
   .option('--frames <count>', 'Number of frames to capture', parseInt)
-  .option('--start-frame <count>', '', parseInt)
   .option('-S, --selector <selector>', 'CSS Selector of item to capture')
   .option('-V, --viewport <dimensions>', 'Viewport dimensions, in pixels (e.g. 800,600)', function (str) {
     var dims = str.split(',').map(function (d) { return parseInt(d); });
@@ -82,6 +81,8 @@ commander
     return str.split(' ');
   })
   .option('--no-headless', 'Chromium/Chrome runs in a window instead of headless mode')
+  .option('--screenshot-type <type>', 'Output image format for screenshots, either png or jpeg')
+  .option('--screenshot-quality <level>', 'The quality level for lossy screenshots', parseFloat)
   .option('--keep-frames', 'Doesn\'t delete frames after processing them. Doesn\'t do anything in pipe mode')
   .parse(process.argv);
 
