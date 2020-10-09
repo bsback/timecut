@@ -89,6 +89,7 @@ module.exports = function (config) {
     var convertProcess, processPromise;
     var extension;
     var screenshotType = config.screenshotType || "png";
+    var startFrame;
 
     var transparentBackground = config.transparentBackground;
 
@@ -127,6 +128,12 @@ module.exports = function (config) {
         fps = defaultFPS;
     }
 
+    if (config.startFrame) {
+        startFrame = config.startFrame;
+    } else {
+        startFrame = 1;
+    }
+
     const log = function () {
         if (!config.quiet) {
             // eslint-disable-next-line no-console
@@ -147,6 +154,8 @@ module.exports = function (config) {
         if (!argumentArrayContains(inputOptions, "-framerate")) {
             ffmpegArgs = ffmpegArgs.concat(["-framerate", fps]);
         }
+
+        ffmpegArgs = ffmpegArgs.concat(["-start_number", startFrame]); //开始的图片
 
         if (
             pipeMode &&
