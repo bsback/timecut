@@ -91,6 +91,14 @@ module.exports = function (config) {
     var screenshotType = config.screenshotType || "png";
     var startFrame;
 
+    //透明背景
+    var transparentBackground = config.transparentBackground;
+    if (transparentBackground) {
+        output += ".mov";
+    } else {
+        output += ".mp4";
+    }
+
     var transparentBackground = config.transparentBackground;
 
     if (frameMode) {
